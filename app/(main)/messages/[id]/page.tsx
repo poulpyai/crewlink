@@ -111,7 +111,7 @@ export default function ChatThreadPage({ params }: { params: Promise<{ id: strin
 
       // Get user role
       const { data: userData } = await supabase
-        .from('users')
+        .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single();

@@ -25,14 +25,14 @@ export async function POST(request: Request) {
       }
     );
 
-    // Delete from users table first (will cascade to related tables)
+    // Delete from profiles table first (will cascade to related tables)
     const { error: tableError } = await supabase
-      .from("users")
+      .from("profiles")
       .delete()
       .eq("id", userId);
 
     if (tableError) {
-      console.error("Error deleting from users table:", tableError);
+      console.error("Error deleting from profiles table:", tableError);
       return NextResponse.json(
         { error: tableError.message },
         { status: 500 }

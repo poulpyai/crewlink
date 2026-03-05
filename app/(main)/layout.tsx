@@ -18,7 +18,7 @@ export default async function MainLayout({
 
   // Get user profile
   const { data: profile } = await supabase
-    .from("users")
+    .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single();

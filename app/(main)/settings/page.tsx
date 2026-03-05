@@ -135,7 +135,7 @@ export default function SettingsPage() {
 
           // Get profile data
           const { data: profile } = await supabase
-            .from("users")
+            .from("profiles")
             .select("full_name, role")
             .eq("id", user.id)
             .single();
@@ -205,9 +205,9 @@ export default function SettingsPage() {
 
             // If Pilot, load pilot profile + phone
             if (profile.role === "pilot") {
-              // Load phone from users table
+              // Load phone from profiles table
               const { data: userData } = await supabase
-                .from("users")
+                .from("profiles")
                 .select("phone")
                 .eq("id", user.id)
                 .single();
@@ -256,7 +256,7 @@ export default function SettingsPage() {
       const supabase = createClient();
 
       const { error: updateError } = await supabase
-        .from("users")
+        .from("profiles")
         .update({ full_name: fullName })
         .eq("id", userId);
 
@@ -279,7 +279,7 @@ export default function SettingsPage() {
 
       // Update phone in users table
       await supabase
-        .from("users")
+        .from("profiles")
         .update({ phone: phone || null })
         .eq("id", userId);
 
