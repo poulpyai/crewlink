@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     );
 
     // Insert user profile
-    const { data, error } = await supabase.from("users").insert([
+    const { data, error } = await supabase.from("profiles").insert([
       {
         id,
         email,
