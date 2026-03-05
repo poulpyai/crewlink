@@ -362,7 +362,7 @@ export default function BookingsPage() {
         if (!existingConv) {
           // Create new conversation
           const subject = request.sim_slots
-            ? `Re: ${request.sim_slots.aircraft_type} Simulator - ${new Date(request.sim_slots.date || request.sim_slots.start_time).toLocaleDateString('en-GB')}`
+            ? `Re: ${request.sim_slots.aircraft_type} Simulator - ${new Date(request.sim_slots.start_time).toLocaleDateString('en-GB')}`
             : `Re: ${request.service_type || 'Booking Request'}`;
 
           const { data: newConv, error: convError } = await supabase.from('conversations').insert({
@@ -589,9 +589,9 @@ export default function BookingsPage() {
                   {request.sim_slots && (
                     <div className="flex items-center gap-4 text-sm text-neutral-400">
                       <Calendar className="w-4 h-4" />
-                      <span>{new Date(request.sim_slots.date).toLocaleDateString('en-GB')}</span>
+                      <span>{new Date(request.sim_slots.start_time).toLocaleDateString('en-GB')}</span>
                       <Clock className="w-4 h-4" />
-                      <span>{request.sim_slots.start_time} - {request.sim_slots.end_time}</span>
+                      <span>{new Date(request.sim_slots.start_time).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                   )}
                   {request.decline_reason && (
