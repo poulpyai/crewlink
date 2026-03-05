@@ -1,0 +1,525 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Search, Filter, Award, MapPin, Globe, DollarSign, X, CheckCircle } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import ExaminerBookingModal from "@/components/bookings/examiner-booking-modal";
+
+type Examiner = {
+  id: string;
+  examiner_number: string;
+  examiner_types: string[];
+  rating_types?: string[];
+  aircraft_types: string[];
+  bio: string | null;
+  hourly_rate: number | null;
+  location: string | null;
+  available_countries: string[];
+  verified: boolean;
+  users: {
+    full_name: string;
+    email: string;
+  };
+};
+
+export default function ExaminerBrowse() {
+  const [examiners, setExaminers] = useState<Examiner[]>([]);
+  const [filteredExaminers, setFilteredExaminers] = useState<Examiner[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState("");
+  const [selectedAircraft, setSelectedAircraft] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedExaminer, setSelectedExaminer] = useState<Examiner | null>(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+
+  useEffect(() => {
+    loadExaminers();
+  }, []);
+
+  useEffect(() => {
+    filterExaminers();
+  }, [searchTerm, selectedType, selectedAircraft, examiners]);
+
+  async function loadExaminers() {
+    try {
+      const supabase = createClient();
+
+      // Get all verified examiners with user info
+      const { data: examinersData, error } = await supabase
+        .from("examiner_profiles")
+        .select(`
+          *,
+          users (
+            full_name,
+            email
+          )
+        `)
+        .eq("verified", true)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error loading examiners:", error);
+      } else {
+        setExaminers(examinersData || []);
+      }
+    } catch (err) {
+      console.error("Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function filterExaminers() {
+    let filtered = [...examiners];
+
+    // Search by name or location
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (examiner) =>
+          examiner.users.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          examiner.location?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filter by examiner type
+    if (selectedType) {
+      filtered = filtered.filter((examiner) =>
+        examiner.examiner_types.includes(selectedType)
+      );
+    }
+
+    // Filter by aircraft
+    if (selectedAircraft) {
+      filtered = filtered.filter((examiner) =>
+        examiner.aircraft_types.includes(selectedAircraft)
+      );
+    }
+
+    setFilteredExaminers(filtered);
+  }
+
+  function getUniqueTypes() {
+    const types = new Set<string>();
+    examiners.forEach((e) => e.examiner_types.forEach((t) => types.add(t)));
+    return Array.from(types).sort();
+  }
+
+  function getUniqueAircraft() {
+    const aircraft = new Set<string>();
+    examiners.forEach((e) => e.aircraft_types.forEach((a) => aircraft.add(a)));
+    return Array.from(aircraft).sort();
+  }
+
+  function clearFilters() {
+    setSearchTerm("");
+    setSelectedType("");
+    setSelectedAircraft("");
+  }
+
+  const hasActiveFilters = searchTerm || selectedType || selectedAircraft;
+
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center py-12 text-neutral-400">Loading examiners...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-white mb-2">Find Examiners</h1>
+        <p className="text-neutral-400">
+          Browse verified TRE/TRI/FE/FI examiners worldwide
+        </p>
+      </div>
+
+      {/* Search & Filter Bar */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            {/* Search */}
+            <div className="flex space-x-2">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                <Input
+                  placeholder="Search by name or location..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className={showFilters ? "bg-neutral-800" : ""}
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Filters
+              </Button>
+            </div>
+
+            {/* Filters (expandable) */}
+            {showFilters && (
+              <div className="grid md:grid-cols-3 gap-4 pt-4 border-t border-neutral-800">
+                <div className="space-y-2">
+                  <Label htmlFor="type">Examiner Type</Label>
+                  <select
+                    id="type"
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-white ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                  >
+                    <option value="">All types</option>
+                    {getUniqueTypes().map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="aircraft">Aircraft Type</Label>
+                  <select
+                    id="aircraft"
+                    value={selectedAircraft}
+                    onChange={(e) => setSelectedAircraft(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-white ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                  >
+                    <option value="">All aircraft</option>
+                    {getUniqueAircraft().map((aircraft) => (
+                      <option key={aircraft} value={aircraft}>
+                        {aircraft}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  {hasActiveFilters && (
+                    <Button variant="ghost" onClick={clearFilters} className="w-full">
+                      <X className="w-4 h-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Results Count */}
+      <div className="flex items-center justify-between">
+        <p className="text-neutral-400">
+          {filteredExaminers.length} examiner{filteredExaminers.length === 1 ? "" : "s"} found
+        </p>
+        {hasActiveFilters && (
+          <p className="text-sm text-neutral-500">
+            Filtered from {examiners.length} total
+          </p>
+        )}
+      </div>
+
+      {/* Examiners Grid */}
+      {filteredExaminers.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Award className="w-12 h-12 mx-auto mb-4 opacity-50 text-neutral-400" />
+            <h3 className="text-lg font-semibold text-white mb-2">No examiners found</h3>
+            <p className="text-neutral-400 mb-4">
+              {hasActiveFilters
+                ? "Try adjusting your filters"
+                : "No examiners available at the moment"}
+            </p>
+            {hasActiveFilters && (
+              <Button variant="outline" onClick={clearFilters}>
+                Clear Filters
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid md:grid-cols-2 gap-4">
+          {filteredExaminers.map((examiner) => (
+            <Card
+              key={examiner.id}
+              className="hover:border-primary-500/50 transition-colors cursor-pointer"
+              onClick={() => setSelectedExaminer(examiner)}
+            >
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2">
+                      <CardTitle className="text-xl">{examiner.users.full_name}</CardTitle>
+                      {examiner.verified && (
+                        <span className="text-xs px-2 py-1 rounded bg-green-500/20 text-green-500 flex items-center space-x-1">
+                          <span>✓</span>
+                          <span>Verified</span>
+                        </span>
+                      )}
+                    </div>
+                    <CardDescription className="flex flex-wrap gap-1 mt-2">
+                      {examiner.examiner_types.map((type) => (
+                        <span
+                          key={type}
+                          className="text-xs px-2 py-1 rounded bg-primary-500/20 text-primary-500"
+                        >
+                          {type}
+                        </span>
+                      ))}
+                    </CardDescription>
+                  </div>
+                  {examiner.hourly_rate && (
+                    <div className="text-right ml-4">
+                      <div className="text-xl font-bold text-white">${examiner.hourly_rate}</div>
+                      <div className="text-xs text-neutral-400">/hour</div>
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {examiner.location && (
+                  <div className="flex items-center space-x-2 text-sm text-neutral-400">
+                    <MapPin className="w-4 h-4" />
+                    <span>{examiner.location}</span>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-1">
+                  {examiner.aircraft_types.slice(0, 6).map((aircraft) => (
+                    <span
+                      key={aircraft}
+                      className="text-xs px-2 py-1 rounded bg-neutral-800 text-neutral-300"
+                    >
+                      {aircraft}
+                    </span>
+                  ))}
+                  {examiner.aircraft_types.length > 6 && (
+                    <span className="text-xs px-2 py-1 rounded bg-neutral-800 text-neutral-300">
+                      +{examiner.aircraft_types.length - 6} more
+                    </span>
+                  )}
+                </div>
+                {examiner.bio && (
+                  <p className="text-sm text-neutral-400 line-clamp-2">{examiner.bio}</p>
+                )}
+                <Button className="w-full mt-2">View Profile</Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Examiner Details Modal */}
+      {selectedExaminer && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/80 z-40"
+            onClick={() => setSelectedExaminer(null)}
+          />
+
+          {/* Modal */}
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-2xl">{selectedExaminer.users.full_name}</CardTitle>
+                    <CardDescription className="flex items-center space-x-2 mt-2">
+                      <span className="text-xs px-2 py-1 rounded bg-green-500/20 text-green-500">
+                        ✓ Verified
+                      </span>
+                      <span className="text-xs text-neutral-500">
+                        {selectedExaminer.examiner_number}
+                      </span>
+                    </CardDescription>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedExaminer(null)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Examiner Types */}
+                <div className="p-4 rounded-lg bg-neutral-900 space-y-2">
+                  <div className="flex items-center space-x-2 font-semibold text-white">
+                    <Award className="w-4 h-4 text-primary-500" />
+                    <span>Examiner Types</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedExaminer.examiner_types.map((type) => (
+                      <span
+                        key={type}
+                        className="px-3 py-1 rounded bg-primary-500/20 text-primary-500 text-sm font-medium"
+                      >
+                        {type}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Rating Types */}
+                {selectedExaminer.rating_types && selectedExaminer.rating_types.length > 0 && (
+                  <div className="p-4 rounded-lg bg-neutral-900 space-y-2">
+                    <div className="font-semibold text-white">Rating Types</div>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedExaminer.rating_types.map((rating) => (
+                        <span
+                          key={rating}
+                          className="px-3 py-1 rounded bg-blue-500/20 text-blue-400 text-sm"
+                        >
+                          {rating}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Aircraft Types */}
+                <div className="p-4 rounded-lg bg-neutral-900 space-y-2">
+                  <div className="font-semibold text-white">Aircraft Types</div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedExaminer.aircraft_types.map((aircraft) => (
+                      <span
+                        key={aircraft}
+                        className="px-3 py-1 rounded bg-neutral-800 text-neutral-300 text-sm"
+                      >
+                        {aircraft}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Bio */}
+                {selectedExaminer.bio && (
+                  <div className="p-4 rounded-lg bg-neutral-900 space-y-2">
+                    <div className="font-semibold text-white">About</div>
+                    <p className="text-sm text-neutral-400">{selectedExaminer.bio}</p>
+                  </div>
+                )}
+
+                {/* Location & Rate */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {selectedExaminer.location && (
+                    <div className="p-4 rounded-lg bg-neutral-900 space-y-2">
+                      <div className="flex items-center space-x-2 font-semibold text-white">
+                        <MapPin className="w-4 h-4 text-primary-500" />
+                        <span>Location</span>
+                      </div>
+                      <p className="text-sm text-neutral-400">{selectedExaminer.location}</p>
+                    </div>
+                  )}
+                  {selectedExaminer.hourly_rate && (
+                    <div className="p-4 rounded-lg bg-neutral-900 space-y-2">
+                      <div className="flex items-center space-x-2 font-semibold text-white">
+                        <DollarSign className="w-4 h-4 text-green-500" />
+                        <span>Hourly Rate</span>
+                      </div>
+                      <p className="text-2xl font-bold text-white">
+                        ${selectedExaminer.hourly_rate}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Available Countries */}
+                {selectedExaminer.available_countries.length > 0 && (
+                  <div className="p-4 rounded-lg bg-neutral-900 space-y-2">
+                    <div className="flex items-center space-x-2 font-semibold text-white">
+                      <Globe className="w-4 h-4 text-primary-500" />
+                      <span>Available In</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedExaminer.available_countries.map((country) => (
+                        <span
+                          key={country}
+                          className="px-2 py-1 rounded bg-neutral-800 text-neutral-300 text-sm"
+                        >
+                          {country}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="pt-4">
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowBookingModal(true);
+                    }}
+                  >
+                    Request Session
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
+
+      {/* Booking Modal */}
+      {showBookingModal && selectedExaminer && (
+        <ExaminerBookingModal
+          examiner={selectedExaminer}
+          onClose={() => setShowBookingModal(false)}
+          onSuccess={() => {
+            setShowSuccessAlert(true);
+            setTimeout(() => setShowSuccessAlert(false), 5000);
+          }}
+        />
+      )}
+
+      {/* Success Alert */}
+      {showSuccessAlert && (
+        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 duration-300">
+          <Card className="w-96 bg-green-500/10 border-green-500/20">
+            <CardContent className="pt-6">
+              <div className="flex items-start space-x-3">
+                <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-green-500 mb-1">Request Sent! ✈️</h3>
+                  <p className="text-sm text-green-400 mb-3">
+                    The examiner will respond within 48 hours. Check your bookings page to track
+                    status.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => (window.location.href = "/my-bookings")}
+                    className="border-green-500/20 hover:bg-green-500/10"
+                  >
+                    Track Your Bookings →
+                  </Button>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowSuccessAlert(false)}
+                  className="hover:bg-green-500/10"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+}

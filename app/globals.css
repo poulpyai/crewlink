@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+/* Aviation gradient utility */
+@utility aviation-gradient {
+  background: linear-gradient(to right, #0066CC, #00D9FF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glass effect */
+@utility glass-effect {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(64, 64, 64);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(82, 82, 82);
+}
+
+/* Base styles */
+body {
+  background: #0A0A0A;
+  color: #FFFFFF;
+}
