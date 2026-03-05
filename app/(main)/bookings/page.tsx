@@ -479,13 +479,13 @@ export default function BookingsPage() {
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4" />
                           <span>
-                            {new Date(request.sim_slots.date).toLocaleDateString('en-GB')}
+                            {new Date(request.sim_slots.start_time).toLocaleDateString('en-GB')}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4" />
                           <span>
-                            {request.sim_slots.start_time} - {request.sim_slots.end_time}
+                            {new Date(request.sim_slots.start_time).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
                         <span>({request.sim_slots.duration_hours}h)</span>
