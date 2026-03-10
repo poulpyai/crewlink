@@ -66,17 +66,7 @@ export default function BookingsPage() {
       // Get booking requests where this user is the provider
       const { data: requestsData, error } = await supabase
         .from('booking_requests')
-        .select(`
-          *,
-          sim_slots!booking_requests_slot_id_fkey (
-            aircraft_type,
-            simulator_type,
-            date,
-            start_time,
-            end_time,
-            duration_hours
-          )
-        `)
+        .select('*')
         .eq('provider_id', user.id)
         .order('created_at', { ascending: false });
 

@@ -73,18 +73,6 @@ export default function MyBookingsPage() {
           provider:profiles!booking_requests_provider_id_fkey (
             full_name,
             email
-          ),
-          sim_slots!booking_requests_slot_id_fkey (
-            aircraft_type,
-            simulator_type,
-            date,
-            start_time,
-            end_time,
-            duration_hours,
-            sim_companies (
-              company_name,
-              location
-            )
           )
         `)
         .eq('pilot_id', user.id)
