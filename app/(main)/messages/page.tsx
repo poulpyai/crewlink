@@ -17,7 +17,7 @@ type Conversation = {
   provider_id: string;
   provider_type: string;
   messages: Array<{
-    message_text: string;
+    content: string;
     created_at: string;
   }>;
 };
@@ -50,7 +50,7 @@ export default function MessagesPage() {
         .select(`
           *,
           messages (
-            message_text,
+            content,
             created_at
           )
         `)
@@ -84,7 +84,7 @@ export default function MessagesPage() {
     const sorted = [...conv.messages].sort((a, b) => 
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-    return sorted[0].message_text;
+    return sorted[0].content;
   }
 
   if (loading) {

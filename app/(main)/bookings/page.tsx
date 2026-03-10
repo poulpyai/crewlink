@@ -184,7 +184,7 @@ export default function BookingsPage() {
         await supabase.from('messages').insert({
           conversation_id: conversation.id,
           sender_id: (await supabase.auth.getUser()).data.user?.id,
-          message_text: `I'd like to propose rescheduling to ${newDate}. Would that work for you?`,
+          content: `I'd like to propose rescheduling to ${newDate}. Would that work for you?`,
         });
       }
 
@@ -374,8 +374,8 @@ export default function BookingsPage() {
           message: status === 'confirmed'
             ? `Your booking request has been confirmed. Start chatting to arrange payment.`
             : `Your booking request was declined. ${reason || 'The provider will contact you with alternatives.'}`,
-          link_to: '/my-bookings',
-          related_booking_id: requestId,
+          related_id: requestId,
+          related_type: 'booking_request',
         });
       }
 

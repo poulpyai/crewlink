@@ -12,7 +12,7 @@ type Message = {
   id: string;
   sender_id: string;
   sender_type: string;
-  message_text: string;
+  content: string;
   created_at: string;
   read_at: string | null;
 };
@@ -66,7 +66,7 @@ export default function ChatThreadPage({ params }: { params: Promise<{ id: strin
             // Replace temp message if exists
             const tempMsgIndex = current.findIndex(m => m.id.toString().startsWith('temp-'));
             if (tempMsgIndex !== -1 && 
-                current[tempMsgIndex].message_text === newMessage.message_text &&
+                current[tempMsgIndex].content === newMessage.content &&
                 current[tempMsgIndex].sender_id === newMessage.sender_id) {
               // Replace temp with real message
               const updated = [...current];
@@ -209,7 +209,7 @@ export default function ChatThreadPage({ params }: { params: Promise<{ id: strin
         id: `temp-${Date.now()}`,
         sender_id: user.id,
         sender_type: currentUserRole,
-        message_text: messageText,
+        content: messageText,
         created_at: new Date().toISOString(),
         read_at: null,
       };
@@ -223,7 +223,7 @@ export default function ChatThreadPage({ params }: { params: Promise<{ id: strin
           conversation_id: conversationId,
           sender_id: user.id,
           sender_type: currentUserRole,
-          message_text: messageText,
+          content: messageText,
         });
 
       if (error) {
@@ -301,7 +301,7 @@ export default function ChatThreadPage({ params }: { params: Promise<{ id: strin
                         : 'bg-neutral-800 text-neutral-100'
                     }`}
                   >
-                    <p className="text-sm break-words">{message.message_text}</p>
+                    <p className="text-sm break-words">{message.content}</p>
                     <p className={`text-xs mt-1 ${
                       isMyMessage(message) ? 'text-primary-100' : 'text-neutral-500'
                     }`}>
