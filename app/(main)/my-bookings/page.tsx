@@ -70,7 +70,7 @@ export default function MyBookingsPage() {
         .from('booking_requests')
         .select(`
           *,
-          provider:users!booking_requests_provider_id_fkey (
+          provider:profiles!booking_requests_provider_id_fkey (
             full_name,
             email
           ),

@@ -29,7 +29,7 @@ export default async function DashboardPage() {
         date,
         start_time
       ),
-      provider:users!booking_requests_provider_id_fkey (
+      provider:profiles!booking_requests_provider_id_fkey (
         full_name,
         email
       )
