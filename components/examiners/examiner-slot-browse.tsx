@@ -25,7 +25,7 @@ type ExaminerSlot = {
     examiner_number: string;
     verified: boolean;
   };
-  users: {
+  profiles: {
     id: string;
     full_name: string;
     email: string;

@@ -23,7 +23,7 @@ type AmeSlot = {
   ame_profiles: {
     id: string;
   };
-  users: {
+  profiles: {
     id: string;
     full_name: string;
     email: string;
