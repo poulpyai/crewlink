@@ -61,7 +61,7 @@ export default function AmeSlotBrowse() {
           ame_profiles (
             id
           ),
-          users (
+          profiles (
             id,
             full_name,
             email
@@ -90,7 +90,7 @@ export default function AmeSlotBrowse() {
     if (searchTerm) {
       filtered = filtered.filter(
         (slot) =>
-          slot.users.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          slot.profiles.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           slot.clinic_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           slot.location.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -144,7 +144,7 @@ export default function AmeSlotBrowse() {
         .from("booking_requests")
         .insert({
           pilot_id: user.id,
-          provider_id: selectedSlot.users.id,
+          provider_id: selectedSlot.profiles.id,
           provider_type: "ame",
           service_type: `Medical Class ${selectedSlot.medical_class}`,
           requested_dates: [selectedSlot.date],
@@ -173,7 +173,7 @@ export default function AmeSlotBrowse() {
       // Create conversation (unlocked immediately for communication)
       await supabase.from("conversations").insert({
         pilot_id: user.id,
-        provider_id: selectedSlot.users.id,
+        provider_id: selectedSlot.profiles.id,
         provider_type: "ame",
         booking_request_id: bookingData.id,
         subject: `Medical Class ${selectedSlot.medical_class} Appointment`,
@@ -181,7 +181,7 @@ export default function AmeSlotBrowse() {
 
       // Notify AME of NEW REQUEST
       await supabase.from("notifications").insert({
-        user_id: selectedSlot.users.id,
+        user_id: selectedSlot.profiles.id,
         type: "booking_request",
         title: "New Appointment Request",
         message: `${user.email} requested Medical Class ${selectedSlot.medical_class} appointment`,
@@ -322,7 +322,7 @@ export default function AmeSlotBrowse() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
-                      <CardTitle className="text-lg">{slot.users.full_name}</CardTitle>
+                      <CardTitle className="text-lg">{slot.profiles.full_name}</CardTitle>
                       {slot.booking_status === 'pending' && (
                         <span className="text-xs px-2 py-1 rounded bg-yellow-500/20 text-yellow-500">
                           Pending Request
@@ -410,7 +410,7 @@ export default function AmeSlotBrowse() {
                 <div className="p-4 rounded-lg bg-neutral-900 space-y-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-white">{selectedSlot.users.full_name}</h3>
+                      <h3 className="font-semibold text-white">{selectedSlot.profiles.full_name}</h3>
                       {selectedSlot.clinic_name && (
                         <p className="text-sm text-neutral-400">{selectedSlot.clinic_name}</p>
                       )}

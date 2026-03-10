@@ -75,7 +75,7 @@ export default function ExaminerSlotBrowse() {
             examiner_number,
             verified
           ),
-          users (
+          profiles (
             id,
             full_name,
             email
@@ -104,7 +104,7 @@ export default function ExaminerSlotBrowse() {
     if (searchTerm) {
       filtered = filtered.filter(
         (slot) =>
-          slot.users.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          slot.profiles.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           slot.location.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -155,7 +155,7 @@ export default function ExaminerSlotBrowse() {
         .from("booking_requests")
         .insert({
           pilot_id: user.id,
-          provider_id: selectedSlot.users.id,
+          provider_id: selectedSlot.profiles.id,
           provider_type: "examiner",
           service_type: selectedSlot.service_type,
           aircraft_type: selectedSlot.aircraft_type,
@@ -186,7 +186,7 @@ export default function ExaminerSlotBrowse() {
       // Create conversation (unlocked immediately for communication)
       await supabase.from("conversations").insert({
         pilot_id: user.id,
-        provider_id: selectedSlot.users.id,
+        provider_id: selectedSlot.profiles.id,
         provider_type: "examiner",
         booking_request_id: bookingData.id,
         subject: `${selectedSlot.service_type} Session - ${selectedSlot.aircraft_type}`,
@@ -194,7 +194,7 @@ export default function ExaminerSlotBrowse() {
 
       // Notify examiner of NEW REQUEST
       await supabase.from("notifications").insert({
-        user_id: selectedSlot.users.id,
+        user_id: selectedSlot.profiles.id,
         type: "booking_request",
         title: "New Booking Request",
         message: `${user.email} wants to book ${selectedSlot.service_type} for ${selectedSlot.aircraft_type}`,
@@ -335,7 +335,7 @@ export default function ExaminerSlotBrowse() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <span>{slot.users.full_name}</span>
+                      <span>{slot.profiles.full_name}</span>
                       {slot.examiner_profiles.verified && (
                         <span className="text-xs px-2 py-0.5 rounded bg-green-500/20 text-green-500">
                           ✓
@@ -422,7 +422,7 @@ export default function ExaminerSlotBrowse() {
                 <div className="p-4 rounded-lg bg-neutral-900 space-y-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-white">{selectedSlot.users.full_name}</h3>
+                      <h3 className="font-semibold text-white">{selectedSlot.profiles.full_name}</h3>
                       <p className="text-sm text-neutral-400">{selectedSlot.examiner_profiles.examiner_number}</p>
                     </div>
                     <div className="text-right">
