@@ -146,6 +146,7 @@ export default function AmeSlotBrowse() {
           pilot_id: user.id,
           provider_id: selectedSlot.profiles.id,
           provider_type: "ame",
+          slot_type: "ame",
           service_type: `Medical Class ${selectedSlot.medical_class}`,
           requested_dates: [selectedSlot.date],
           package_price: selectedSlot.price,
