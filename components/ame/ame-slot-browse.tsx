@@ -149,7 +149,8 @@ export default function AmeSlotBrowse() {
           slot_type: "ame",
           service_type: `Medical Class ${selectedSlot.medical_class}`,
           requested_dates: [selectedSlot.date],
-          package_price: selectedSlot.price,
+          package_price: selectedSlot.price || 0,
+          total_price: selectedSlot.price || 0,
           status: "pending",
         })
         .select()
