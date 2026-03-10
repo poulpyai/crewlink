@@ -150,14 +150,15 @@ export default function AmeSlotManagement() {
       if (!user) throw new Error("Not authenticated");
 
       const { error} = await supabase.from("ame_slots").insert({
+        ame_id: profile.id,
         user_id: user.id,
         medical_class: medicalClass,
-        certification_authority: selectedAuthorities[0], // First authority
-        appointment_date: date,
-        appointment_time: startTime,
+        certification_authorities: selectedAuthorities,
+        date,
+        start_time: startTime,
         duration_minutes: parseInt(durationMinutes),
         location,
-        notes: clinicName || null,
+        clinic_name: clinicName || null,
         price: price ? parseFloat(price) : null,
         booking_status: "available",
       });
