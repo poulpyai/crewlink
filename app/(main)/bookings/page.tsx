@@ -506,7 +506,7 @@ export default function BookingsPage() {
                   {/* Price */}
                   <div className="flex items-center justify-between py-2 border-t border-neutral-800">
                     <span className="text-sm text-neutral-400">Package Price:</span>
-                    <span className="text-xl font-bold text-white">€{request.package_price.toFixed(2)}</span>
+                    <span className="text-xl font-bold text-white">€{(request.package_price ?? 0).toFixed(2)}</span>
                   </div>
 
                   {/* Actions */}
